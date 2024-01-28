@@ -33,4 +33,5 @@ const registerUser = async (req, res) => {
 // Exportar los métodos del controlador
 module.exports = {
     getAllUsers,
+    registerUser
 };

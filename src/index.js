@@ -13,7 +13,8 @@ const { sequelize } = require('./database/connection.js');
 const UserRoutes = require('./routes/User.routes.js');
 
 // Usar las rutas
-app.use('/users', UserRoutes);
+const userRoutesPrefix = '/api';
+app.use(userRoutesPrefix, UserRoutes);
 
 // Empezar el servidor
 app.listen(port, () => {

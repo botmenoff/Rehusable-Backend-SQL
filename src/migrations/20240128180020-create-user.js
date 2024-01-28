@@ -27,6 +27,9 @@ module.exports = {
       isAdmin: {
         type: Sequelize.BOOLEAN
       },
+      emailVerified: {
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
