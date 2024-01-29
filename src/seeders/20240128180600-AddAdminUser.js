@@ -20,6 +20,7 @@ module.exports = {
       avatar: '',
       isBanned: false,
       isAdmin: true,
+      emailVerified: false,
       createdAt: new Date(),
       updatedAt: new Date()
     }], {});

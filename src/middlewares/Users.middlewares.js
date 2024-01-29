@@ -72,8 +72,8 @@ const verificationEmail = async (req, res, next) => {
 
             console.log({ data });
         })();
-        
-        res.status(200).json({ message: 'Verification email sent successfully' });
+
+        //res.status(200).json({ message: 'Verification email sent successfully' });
         next()
     } catch (error) {
         res.status(500).json({ 'Unexpected Error:': error });
