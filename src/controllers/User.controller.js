@@ -22,11 +22,13 @@ const getAllUsers = async (req, res) => {
 // REGISTER
 const registerUser = async (req, res) => {
     try {
-        const { userName, email, password } = req.body;
-        const user = await User.create({ userName, email, password });
-        res.status(200).json(user);
+        // const { userName, email, password } = req.body;
+        // const user = await User.create({ userName, email, password });
+        res.status(200).json("LLEGADO AQUI CREANDO USER...");
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
     }
 };
 

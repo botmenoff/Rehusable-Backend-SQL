@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const resend = require('resend')
+const { Resend } = require('resend')
 require('dotenv').config(); // Cargar las variables de entorno
 
 // VERIFY DATA OF USER
@@ -48,21 +48,31 @@ const verificationEmail = async (req, res, next) => {
     try {
         // Assuming you have the endpoint URL stored in a variable, replace 'YOUR_ENDPOINT_URL' with the actual endpoint URL
         const endpointUrl = 'YOUR_ENDPOINT_URL';
-        console.log("Llega el email");
-        const resend = new Resend('re_2vVeNG9g_JmXv3Y1iQqCWKtwyTZUk6MSz');
-        resend.emails.send({
-            from: 'onboarding@resend.dev',
-            to: req.body.email,
-            subject: 'Verificacion de Email',
-            html: `
+        console.log("EMAIL:");
+        console.log(req.body.email);
+        const resend = new Resend(process.env.API_KEY);
+        (async function () {
+            const { data, error } = await resend.emails.send({
+                from: 'onboarding@resend.dev',
+                to: [req.body.email],
+                subject: 'Verificacion de Email',
+                html: `
                 <p>Clica el boton para verificar tu cuenta </p>
                 <a href="${endpointUrl}?email=${encodeURIComponent(req.body.email)}" target="_blank">
                     <button style="padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px;">
                         Verifica tu Email
                     </button>
                 </a>
-            `,
-        });
+                `,
+            });
+
+            if (error) {
+                return console.error({ error });
+            }
+
+            console.log({ data });
+        })();
+        
         res.status(200).json({ message: 'Verification email sent successfully' });
         next()
     } catch (error) {
