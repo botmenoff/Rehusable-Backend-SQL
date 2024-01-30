@@ -30,15 +30,27 @@ const registerUser = async (req, res) => {
             password: req.body.password
         }
 
-        console.log("Usuario del usuario");
-        console.log(userInput);
-
         const user = await User.create(userInput);
 
+        // Payload
+        const tokenPayload = {
+            id: user.id,
+            userName: user.userName,
+            email: user.email
+        }
         // Generar un json web token
-        const token = jwt.sign(user, process.env.SECRET_KEY, {expiresIn: '24h'})
+        const token = jwt.sign(tokenPayload, process.env.SECRET_KEY, {expiresIn: '24h'})
         res.status(200).json({
-            user: user,
+            user: {
+                userName: user.userName,
+                email: user.email,
+                isAdmin: user.isAdmin,
+                isBanned: user.isBanned,
+                avatar: user.avatar,
+                emailVerified: user.emailVerified,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            },
             token: token
         });
     } catch (error) {
@@ -48,8 +60,61 @@ const registerUser = async (req, res) => {
     }
 };
 
+// VERIFY EMAIL
+const verifyEmail = async (req,res) => {
+    try {
+        const jwt = req.body.jwt
+
+        // Verificar el token
+        jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                res.status(500).json({message: "Error decodifying"})
+            } else {
+                // Hacer una query para obtener el usuario
+                const userEmail = decoded.email
+                // Buscar el usuario
+                const user = await User.findOne({ where: { email: userEmail } });
+                // Si no lo encuentra
+                if (!user) {
+                    return res.status(404).json({ message: "Usuario no encontrado" });
+                }
+                // Actualizar el atributo 'emailVerified' a true
+                user.emailVerified = true;
+                // Guardar los cambios en la base de datos
+                await user.save();
+
+                res.status(200).json({ message: "Email verificado exitosamente" });
+            }
+        })
+
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+}
+
+// DELETE BY ID
+const deleteUsersById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+        await user.destroy();
+        res.status(200).json({ message: "Usuario eliminado exitosamente" });
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+}
+
 // Exportar los métodos del controlador
 module.exports = {
     getAllUsers,
-    registerUser
+    registerUser,
+    verifyEmail,
+    deleteUsersById
 };

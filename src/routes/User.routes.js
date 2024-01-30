@@ -9,5 +9,7 @@ const UsersMiddlewares = require('../middlewares/Users.middlewares.js');
 router.get('/user/get', UserController.getAllUsers);
 // router.get('/get/:id', UserController.getUserById);
 router.post('/user/register', UsersMiddlewares.verifyUserData, UsersMiddlewares.verificationEmail, UserController.registerUser);
+router.delete('/user/delete/:id', UserController.deleteUsersById);
+router.get('/user/verify/:jwt', UserController.verifyEmail);
 
 module.exports = router;
