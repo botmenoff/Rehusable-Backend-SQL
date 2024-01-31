@@ -30,15 +30,8 @@ const registerUser = async (req, res) => {
             password: req.body.password
         }
 
-        // const user = await User.create(userInput);
+        const user = await User.create(userInput);
 
-        // Payload
-        const tokenPayload = {
-            userName: user.userName,
-            email: user.email
-        }
-        // Generar un json web token
-        const token = jwt.sign(tokenPayload, process.env.SECRET_KEY, {expiresIn: '24h'})
         res.status(200).json({
             user: {
                 userName: user.userName,
@@ -49,8 +42,7 @@ const registerUser = async (req, res) => {
                 emailVerified: user.emailVerified,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt
-            },
-            token: token
+            }
         });
     } catch (error) {
         if (!res.headersSent) {
@@ -62,7 +54,7 @@ const registerUser = async (req, res) => {
 // VERIFY EMAIL
 const verifyEmail = async (req,res) => {
     try {
-        const jwt = req.params.jwt
+        const token = req.params.jwt
         console.log(jwt);
 
         // Verificar el token
@@ -72,17 +64,17 @@ const verifyEmail = async (req,res) => {
             } else {
                 // Hacer una query para obtener el usuario
                 const userEmail = decoded.email
+                console.log();
+                console.log(userEmail);
                 // Buscar el usuario
                 const user = await User.findOne({ where: { email: userEmail } });
                 // Si no lo encuentra
                 if (!user) {
                     return res.status(404).json({ message: "Usuario no encontrado" });
+                } else {
+                    // Hacer la consulta
+                    const updatedUser = await User.update({emailVerified: true}, {where: {email: userEmail}})
                 }
-                // Actualizar el atributo 'emailVerified' a true
-                user.emailVerified = true;
-                // Guardar los cambios en la base de datos
-                await user.save();
-
                 res.status(200).json({ message: "Email verificado exitosamente" });
             }
         })

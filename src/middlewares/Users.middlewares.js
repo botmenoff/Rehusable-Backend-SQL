@@ -1,5 +1,6 @@
 const Joi = require('joi');
 require('dotenv').config(); // Cargar las variables de entorno
+const jwt = require('jsonwebtoken')
 
 // VERIFY DATA OF USER
 const verifyUserData = async (req, res, next) => {
@@ -45,12 +46,19 @@ const verifyUserData = async (req, res, next) => {
 // ENVIAR UN EMAIL DE VERIFICACION
 const verificationEmail = async (req, res, next) => {
     try {
-        // Assuming you have the endpoint URL stored in a variable, replace 'YOUR_ENDPOINT_URL' with the actual endpoint URL
-        const endpointUrl = 'YOUR_ENDPOINT_URL';
-        console.log("EMAIL:");
-        console.log(req.body.email);
+        // Endpoint URL
+        const endpointUrl = 'http://127.0.0.1:3000/api/user/verify/';
 
-        // SEND EMAIL WITH NODEMAILER
+        // Payload
+        const tokenPayload = {
+            email: req.body.email
+        }
+        // Generar un json web token
+        const token = jwt.sign(tokenPayload, process.env.SECRET_KEY, { expiresIn: '24h' })
+        // Generar la ruta a la que tiene que llegar con el token
+        const verificationUrl = `${endpointUrl}${token}`;
+
+        // Enviar email
         // Import the transporter object
         const { transporter } = require('../services/Services.js');
         async function main() {
@@ -60,13 +68,13 @@ const verificationEmail = async (req, res, next) => {
                 to: req.body.email,
                 subject: "Verification Email",
                 html: `
-                    <p>Clica el boton para verificar tu cuenta </p>
-                    <a href="${endpointUrl}?email=${encodeURIComponent(req.body.email)}" target="_blank">
-                        <button style="padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px;">
-                            Verifica tu Email
-                        </button>
-                    </a>
-                `,
+            <p>Clica el boton para verificar tu cuenta </p>
+            <a href="${verificationUrl}" target="_blank">
+                <button style="padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px;">
+                    Verifica tu Email
+                </button>
+            </a>
+        `,
             });
 
             console.log("Message sent: %s", info.messageId);
