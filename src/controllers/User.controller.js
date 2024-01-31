@@ -30,7 +30,7 @@ const registerUser = async (req, res) => {
             password: req.body.password
         }
 
-        const user = await User.create(userInput);
+        // const user = await User.create(userInput);
 
         // Payload
         const tokenPayload = {
