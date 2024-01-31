@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const { Resend } = require('resend')
 require('dotenv').config(); // Cargar las variables de entorno
 
 // VERIFY DATA OF USER
@@ -50,35 +49,37 @@ const verificationEmail = async (req, res, next) => {
         const endpointUrl = 'YOUR_ENDPOINT_URL';
         console.log("EMAIL:");
         console.log(req.body.email);
-        const resend = new Resend(process.env.API_KEY);
-        (async function () {
-            const { data, error } = await resend.emails.send({
-                from: 'onboarding@resend.dev',
-                to: [req.body.email],
-                subject: 'Verificacion de Email',
+
+        // SEND EMAIL WITH NODEMAILER
+        // Import the transporter object
+        const { transporter } = require('../services/Services.js');
+        async function main() {
+            // send mail with defined transport object
+            const info = await transporter.sendMail({
+                from: 'diamondbet@zohomail.eu',
+                to: req.body.email,
+                subject: "Verification Email",
                 html: `
-                <p>Clica el boton para verificar tu cuenta </p>
-                <a href="${endpointUrl}?email=${encodeURIComponent(req.body.email)}" target="_blank">
-                    <button style="padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px;">
-                        Verifica tu Email
-                    </button>
-                </a>
+                    <p>Clica el boton para verificar tu cuenta </p>
+                    <a href="${endpointUrl}?email=${encodeURIComponent(req.body.email)}" target="_blank">
+                        <button style="padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px;">
+                            Verifica tu Email
+                        </button>
+                    </a>
                 `,
             });
 
-            if (error) {
-                return console.error({ error });
-            }
+            console.log("Message sent: %s", info.messageId);
+        }
 
-            console.log({ data });
-        })();
-
-        //res.status(200).json({ message: 'Verification email sent successfully' });
-        next()
+        await main();
+        next();
     } catch (error) {
-        res.status(500).json({ 'Unexpected Error:': error });
+        console.error("Error sending verification email:", error);
+        res.status(500).json({ 'Unexpected Error:': error.message });
     }
 }
+
 
 module.exports = {
     verifyUserData,
