@@ -34,7 +34,6 @@ const registerUser = async (req, res) => {
 
         // Payload
         const tokenPayload = {
-            id: user.id,
             userName: user.userName,
             email: user.email
         }
@@ -63,7 +62,8 @@ const registerUser = async (req, res) => {
 // VERIFY EMAIL
 const verifyEmail = async (req,res) => {
     try {
-        const jwt = req.body.jwt
+        const jwt = req.params.jwt
+        console.log(jwt);
 
         // Verificar el token
         jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
