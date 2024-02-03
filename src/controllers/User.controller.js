@@ -1,8 +1,10 @@
 // Iniciar el sequalize
 const Sequelize = require('sequelize');
+const bcrypt = require('bcrypt');
 const connection = require('../database/connection');
 require('dotenv').config(); // Cargar las variables de entorno
 const jwt = require('jsonwebtoken')
+const Services = require('../services/Services');
 
 // Importar el modelo
 const User = require('../models/user')(connection, Sequelize);
@@ -24,10 +26,12 @@ const getAllUsers = async (req, res) => {
 // REGISTER
 const registerUser = async (req, res) => {
     try {
-        const userInput = { 
-            userName: req.body.userName, 
-            email: req.body.email, 
-            password: req.body.password
+        // Hash the password
+        const hashedPassword = await Services.hashPassword(req.body.password);
+        const userInput = {
+            userName: req.body.userName,
+            email: req.body.email,
+            password: hashedPassword
         }
 
         const user = await User.create(userInput);
@@ -51,8 +55,46 @@ const registerUser = async (req, res) => {
     }
 };
 
+// LOGIN
+const loginUser = async (req, res) => {
+    try {
+        const userInput = {
+            email: req.body.email,
+            password: req.body.password
+        }
+
+        // Buscamos el usuario
+        const userFound = await User.findOne({
+            where: {
+                email: userInput.email,
+            }
+        });
+
+        if (!userFound) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        } else {
+            // Comparamos la contraseña
+            const validPassword = await bcrypt.compare(userInput.password, userFound.password);
+            if (!validPassword) {
+                return res.status(401).json({ message: "Contraseña incorrecta" });
+            } else {
+                // Creamos el token
+                const token = await jwt.sign({ id: userFound.dataValues.id }, process.env.SECRET_KEY, {
+                    expiresIn: 60 * 60 * 24 // 24 Hours
+                });
+                res.status(200).json({ token });
+            }
+        }
+
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+}
+
 // VERIFY EMAIL
-const verifyEmail = async (req,res) => {
+const verifyEmail = async (req, res) => {
     try {
         const token = req.params.jwt
         console.log(jwt);
@@ -60,7 +102,7 @@ const verifyEmail = async (req,res) => {
         // Verificar el token
         jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
             if (err) {
-                res.status(500).json({message: "Error decodifying"})
+                res.status(500).json({ message: "Error decodifying" })
             } else {
                 // Hacer una query para obtener el usuario
                 const userEmail = decoded.email
@@ -73,7 +115,7 @@ const verifyEmail = async (req,res) => {
                     return res.status(404).json({ message: "Usuario no encontrado" });
                 } else {
                     // Hacer la consulta
-                    const updatedUser = await User.update({emailVerified: true}, {where: {email: userEmail}})
+                    const updatedUser = await User.update({ emailVerified: true }, { where: { email: userEmail } })
                 }
                 res.status(200).json({ message: "Email verificado exitosamente" });
             }
@@ -83,6 +125,15 @@ const verifyEmail = async (req,res) => {
         if (!res.headersSent) {
             res.status(500).json({ message: error.message });
         }
+    }
+}
+
+// UPLOAD IMAGE AVATAR
+const uploadAvatar = async (req,res) => {
+    try {
+        res.status(200).json({message: "Your photo has been uploaded"})
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -107,6 +158,8 @@ const deleteUsersById = async (req, res) => {
 module.exports = {
     getAllUsers,
     registerUser,
+    loginUser,
     verifyEmail,
-    deleteUsersById
+    deleteUsersById,
+    uploadAvatar
 };
