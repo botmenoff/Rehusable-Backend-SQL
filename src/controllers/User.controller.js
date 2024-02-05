@@ -36,7 +36,7 @@ const registerUser = async (req, res) => {
 
         const user = await User.create(userInput);
 
-        res.status(200).json({
+        res.status(201).json({
             user: {
                 userName: user.userName,
                 email: user.email,
@@ -73,10 +73,13 @@ const loginUser = async (req, res) => {
         if (!userFound) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         } else {
+            console.log('Contraseña proporcionada:', userInput.password);
+            console.log('Contraseña almacenada:', userFound.password);
             // Comparamos la contraseña
             const validPassword = await bcrypt.compare(userInput.password, userFound.password);
+            console.log(validPassword);
             if (!validPassword) {
-                return res.status(401).json({ message: "Contraseña incorrecta" });
+                return await res.status(401).json({ message: "Contraseña incorrecta" });
             } else {
                 // Creamos el token
                 const token = await jwt.sign({ id: userFound.dataValues.id }, process.env.SECRET_KEY, {
@@ -106,7 +109,6 @@ const verifyEmail = async (req, res) => {
             } else {
                 // Hacer una query para obtener el usuario
                 const userEmail = decoded.email
-                console.log();
                 console.log(userEmail);
                 // Buscar el usuario
                 const user = await User.findOne({ where: { email: userEmail } });

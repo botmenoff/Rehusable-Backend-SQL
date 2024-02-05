@@ -1,6 +1,12 @@
+// DEPENDENCIAS
 const Joi = require('joi');
 require('dotenv').config(); // Cargar las variables de entorno
 const jwt = require('jsonwebtoken')
+const Sequelize = require('sequelize');
+
+// IMPORTAR EL MODELO
+const connection = require('../database/connection');
+const User = require('../models/user')(connection, Sequelize);
 
 // VERIFY DATA OF USER
 const verifyUserData = async (req, res, next) => {
@@ -122,9 +128,53 @@ const veryfyDataLogin = async (req, res, next) => {
     }
 }
 
+// VERIFY THAT THE TOKEN BELONGS TO THE USER
+const verifyToken = async (req, res, next) => {
+    try {
+        // Obtener el token
+        const authorizationHeader = req.headers['authorization'];
+        console.log("JWT");
+        console.log(authorizationHeader);
+
+        // Si no ha puesto el parametro
+        if (authorizationHeader === undefined) {
+            res.status(400).json({ message: "Authorization header not recibed correctlly" });
+        } else {
+            // Verificar el token
+            jwt.verify(authorizationHeader, process.env.SECRET_KEY, async (err, decoded) => {
+                if (err) {
+                    res.status(500).json({ message: "Error decodifying" })
+                } else {
+                    // Hacer una query para obtener el usuario
+                    const userId = decoded.id
+                    console.log(userId);
+                    // Buscar el usuario
+                    const user = await User.findByPk(userId);
+                    // Si no lo encuentra
+                    if (!user) {
+                        return res.status(404).json({ message: "User not found" });
+                    } else {
+                        // Si el id es el mismo
+                        if (user.id == userId) {
+                            next()
+                        } else {
+                            return res.status(401).json({ message: "You are not the owner of this user" });
+                        }
+                    }
+                    
+                }
+            })
+        }
+
+    } catch (error) {
+        res.status(500).json({ 'Unexpected Error:': error });
+    }
+}
+
 
 module.exports = {
     verifyUserData,
     verificationEmail,
-    veryfyDataLogin
+    veryfyDataLogin,
+    verifyToken
 };
