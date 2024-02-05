@@ -76,7 +76,7 @@ const loginUser = async (req, res) => {
             console.log('Contraseña proporcionada:', userInput.password);
             console.log('Contraseña almacenada:', userFound.password);
             // Comparamos la contraseña
-            const validPassword = await bcrypt.compare(userInput.password, userFound.password);
+            const validPassword = await bcrypt.compare(userInput.password + process.env.SECRET_KEY, userFound.password);
             console.log(validPassword);
             if (!validPassword) {
                 return await res.status(401).json({ message: "Contraseña incorrecta" });

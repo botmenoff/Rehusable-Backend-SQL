@@ -14,10 +14,11 @@ const transporter = nodemailer.createTransport({
 
 // HASH PASSWORD FUNCTION
 const hashPassword = async (password) => {
+    const pepperedPassword = password + process.env.SECRET_KEY;
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(pepperedPassword, salt);
     return hashedPassword;
-}
+};
 
 // MULTER SET UP
 const multer = require('multer')
