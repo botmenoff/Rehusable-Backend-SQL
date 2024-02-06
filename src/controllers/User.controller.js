@@ -73,13 +73,13 @@ const loginUser = async (req, res) => {
         if (!userFound) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         } else {
-            console.log('Contraseña proporcionada:', userInput.password);
-            console.log('Contraseña almacenada:', userFound.password);
             // Comparamos la contraseña
-            const validPassword = await bcrypt.compare(userInput.password + process.env.SECRET_KEY, userFound.password);
+            console.log(userInput.password);
+            console.log(userFound.password);
+            const validPassword = await bcrypt.compare(userInput.password, userFound.password);
             console.log(validPassword);
             if (!validPassword) {
-                return await res.status(401).json({ message: "Contraseña incorrecta" });
+                return res.status(401).json({ message: "Contraseña incorrecta" });
             } else {
                 // Creamos el token
                 const token = await jwt.sign({ id: userFound.dataValues.id }, process.env.SECRET_KEY, {
@@ -88,7 +88,6 @@ const loginUser = async (req, res) => {
                 res.status(200).json({ token });
             }
         }
-
     } catch (error) {
         if (!res.headersSent) {
             res.status(500).json({ message: error.message });
@@ -131,9 +130,9 @@ const verifyEmail = async (req, res) => {
 }
 
 // UPLOAD IMAGE AVATAR
-const uploadAvatar = async (req,res) => {
+const uploadAvatar = async (req, res) => {
     try {
-        res.status(200).json({message: "Your photo has been uploaded"})
+        res.status(200).json({ message: "Your photo has been uploaded" })
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
