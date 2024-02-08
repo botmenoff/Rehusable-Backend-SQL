@@ -31,11 +31,6 @@ module.exports = (sequelize, DataTypes) => {
       password: {
         type: DataTypes.STRING,
         allowNull: false,
-        set(value) {
-          // Hash the password before saving
-          const hashedPassword = bcrypt.hashSync(value, 10);
-          this.setDataValue('password', hashedPassword);
-        },
       },
       avatar: DataTypes.STRING,
       isAdmin: {

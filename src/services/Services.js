@@ -1,6 +1,6 @@
 require('dotenv').config(); // Cargar las variables de entorno
 const nodemailer = require("nodemailer");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt')
 
 const transporter = nodemailer.createTransport({
     host: "smtp.zoho.eu",

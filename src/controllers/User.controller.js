@@ -1,9 +1,11 @@
-// Iniciar el sequalize
+// Dependencias
 const Sequelize = require('sequelize');
-const bcrypt = require('bcrypt');
-const connection = require('../database/connection');
 require('dotenv').config(); // Cargar las variables de entorno
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+
+// Archivos
+const connection = require('../database/connection');
 const Services = require('../services/Services');
 
 // Importar el modelo
@@ -31,7 +33,8 @@ const registerUser = async (req, res) => {
         const userInput = {
             userName: req.body.userName,
             email: req.body.email,
-            password: hashedPassword
+            password: hashedPassword,
+            avatar: "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128"
         }
 
         const user = await User.create(userInput);
@@ -74,8 +77,8 @@ const loginUser = async (req, res) => {
             return res.status(404).json({ message: "Usuario no encontrado" });
         } else {
             // Comparamos la contraseña
-            console.log(userInput.password);
-            console.log(userFound.password);
+            console.log(userInput.password + "AAA");
+            console.log(userFound.password + "AAA");
             const validPassword = await bcrypt.compare(userInput.password, userFound.password);
             console.log(validPassword);
             if (!validPassword) {
@@ -88,6 +91,7 @@ const loginUser = async (req, res) => {
                 res.status(200).json({ token });
             }
         }
+
     } catch (error) {
         if (!res.headersSent) {
             res.status(500).json({ message: error.message });
