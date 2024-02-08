@@ -163,7 +163,25 @@ const updateUser = async (req,res) => {
             email: req.body.email,
             avatar: "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128"
         }
-        user.update(userInput)
+
+        // Verificar si el userName o el email existen
+        // const repeatedUsername = await User.findOne({where: {userName: req.body.userName}})
+        // if (!repeatedUsername) {
+        //     return res.status(404).json({ message: "User with that Username already exists" });
+        // }
+
+        // const repeatedEmail = await User.findOne({where: {email: req.body.email}})
+        // if (!repeatedUsername) {
+        //     return res.status(404).json({ message: "User with that Email already exists" });
+        // }
+
+        try {
+            const updatedUser = user.update(userInput)
+            return res.status(202).json({ message: updatedUser });
+        } catch (error) {
+            return res.status(400).json({ message: error });
+        }
+        
     } catch (error) {
         if (!res.headersSent) {
             res.status(500).json({ message: error.message });
