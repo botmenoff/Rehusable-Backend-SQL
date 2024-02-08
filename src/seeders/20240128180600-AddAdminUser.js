@@ -17,10 +17,10 @@ module.exports = {
       userName: 'Administrator',
       email: 'marvenferry60@gmail.com',
       password: 'AhMqg4QNBPzVNVjlsrKE',
-      avatar: '',
+      avatar: 'https://ui-avatars.com/api/?name=admin&background=0D8ABC&color=fff&size=128',
       isBanned: false,
       isAdmin: true,
-      emailVerified: false,
+      emailVerified: true,
       createdAt: new Date(),
       updatedAt: new Date()
     }], {});

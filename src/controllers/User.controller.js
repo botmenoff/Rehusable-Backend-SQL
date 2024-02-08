@@ -16,7 +16,7 @@ const getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
             // No queremos que se muestre la contraseña
-            attributes: ['userName', 'email', 'isAdmin', 'isBanned', 'avatar', 'emailVerified', 'createdAt', 'updatedAt'],
+            attributes: ['id', 'userName', 'email', 'isAdmin', 'isBanned', 'avatar', 'emailVerified', 'createdAt', 'updatedAt'],
         });
         res.status(200).json(users);
         // console.log(users);
@@ -130,15 +130,6 @@ const verifyEmail = async (req, res) => {
     }
 }
 
-// UPLOAD IMAGE AVATAR
-const uploadAvatar = async (req, res) => {
-    try {
-        res.status(200).json({ message: "Your photo has been uploaded" })
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-
 // DELETE BY ID
 const deleteUsersById = async (req, res) => {
     try {
@@ -156,6 +147,30 @@ const deleteUsersById = async (req, res) => {
     }
 }
 
+// UPDATE USER
+const updateUser = async (req,res) => {
+    try {
+        const userId = req.params.id;
+        console.log(userId);
+        // Buscar el usuario
+        const user = await User.findByPk(userId)
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        const userInput = {
+            userName: req.body.userName,
+            email: req.body.email,
+            avatar: "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128"
+        }
+        user.update(userInput)
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+}
+
 // Exportar los métodos del controlador
 module.exports = {
     getAllUsers,
@@ -163,5 +178,5 @@ module.exports = {
     loginUser,
     verifyEmail,
     deleteUsersById,
-    uploadAvatar
+    updateUser
 };
