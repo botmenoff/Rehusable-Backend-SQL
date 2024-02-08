@@ -94,47 +94,12 @@ const verificationEmail = async (req, res, next) => {
     }
 }
 
-// VERIFY USER DATA LOGIN
-const veryfyDataLogin = async (req, res, next) => {
-    try {
-        // Creamos el esquema
-        const UserSchema = Joi.object({
-            email: Joi.string()
-                .email()
-                .required(),
-            /*
-                - La contraseña debe contener al menos una letra mayúscula.
-                - La contraseña debe contener al menos un dígito.
-                - La contraseña debe contener al menos uno de los caracteres especiales: !@#\$%\^&\*.
-                - La longitud total de la contraseña debe ser al menos 8 caracteres.
-            */
-            password: Joi.string()
-                .pattern(/^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/)
-                .required(),
-        });
-
-        // Definimos el usuario que nos pasan de la ruta
-        const user = req.body;
-        // Definimos el error
-        const { error } = UserSchema.validate(user);
-        // Si los datos son correctos pasamos a la ruta
-        if (error) {
-            res.status(400).json({ 'Bad request': error.details });
-        } else {
-            next();
-        }
-    } catch (error) {
-        res.status(500).json({ 'Unexpected Error:': error });
-    }
-}
-
 // VERIFY THAT THE TOKEN BELONGS TO THE USER
 const verifyToken = async (req, res, next) => {
     try {
         // Obtener el token
         const authorizationHeader = req.headers['authorization'];
-        console.log("JWT");
-        console.log(authorizationHeader);
+        const paramId = req.params.id;
 
         // Si no ha puesto el parametro
         if (authorizationHeader === undefined) {
@@ -147,21 +112,19 @@ const verifyToken = async (req, res, next) => {
                 } else {
                     // Hacer una query para obtener el usuario
                     const userId = decoded.id
-                    console.log(userId);
                     // Buscar el usuario
-                    const user = await User.findByPk(userId);
-                    // Si no lo encuentra
-                    if (!user) {
-                        return res.status(404).json({ message: "User not found" });
+                    const userFounded = await User.findByPk(userId);
+                    // Si es admin puede eliminar el usuario
+                    if (userFounded.dataValues.admin) {
+                        next()
                     } else {
                         // Si el id es el mismo
-                        if (user.id == userId) {
+                        if (userId == paramId) {
                             next()
                         } else {
                             return res.status(401).json({ message: "You are not the owner of this user" });
                         }
                     }
-                    
                 }
             })
         }
@@ -175,6 +138,5 @@ const verifyToken = async (req, res, next) => {
 module.exports = {
     verifyUserData,
     verificationEmail,
-    veryfyDataLogin,
     verifyToken
 };

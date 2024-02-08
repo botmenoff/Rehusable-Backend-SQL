@@ -1,9 +1,11 @@
-// Iniciar el sequalize
+// Dependencias
 const Sequelize = require('sequelize');
-const bcrypt = require('bcrypt');
-const connection = require('../database/connection');
 require('dotenv').config(); // Cargar las variables de entorno
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+
+// Archivos
+const connection = require('../database/connection');
 const Services = require('../services/Services');
 
 // Importar el modelo
@@ -31,7 +33,8 @@ const registerUser = async (req, res) => {
         const userInput = {
             userName: req.body.userName,
             email: req.body.email,
-            password: hashedPassword
+            password: hashedPassword,
+            avatar: "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128"
         }
 
         const user = await User.create(userInput);
@@ -73,13 +76,10 @@ const loginUser = async (req, res) => {
         if (!userFound) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         } else {
-            console.log('Contraseña proporcionada:', userInput.password);
-            console.log('Contraseña almacenada:', userFound.password);
             // Comparamos la contraseña
             const validPassword = await bcrypt.compare(userInput.password, userFound.password);
-            console.log(validPassword);
             if (!validPassword) {
-                return await res.status(401).json({ message: "Contraseña incorrecta" });
+                return res.status(401).json({ message: "Contraseña incorrecta" });
             } else {
                 // Creamos el token
                 const token = await jwt.sign({ id: userFound.dataValues.id }, process.env.SECRET_KEY, {
@@ -131,9 +131,9 @@ const verifyEmail = async (req, res) => {
 }
 
 // UPLOAD IMAGE AVATAR
-const uploadAvatar = async (req,res) => {
+const uploadAvatar = async (req, res) => {
     try {
-        res.status(200).json({message: "Your photo has been uploaded"})
+        res.status(200).json({ message: "Your photo has been uploaded" })
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
