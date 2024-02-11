@@ -164,22 +164,59 @@ const updateUser = async (req,res) => {
             avatar: "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128"
         }
 
-        // Verificar si el userName o el email existen
+        // // Verificar si el userName o el email existen
         // const repeatedUsername = await User.findOne({where: {userName: req.body.userName}})
-        // if (!repeatedUsername) {
+        // console.log("USERNAME");
+        // console.log(req.body.userName);
+        // // console.log(repeatedUsername);
+        // if(!repeatedUsername){
+        //     // No hacer nada
+        // } else if (repeatedUsername.dataValues.userName == req.body.userName) {
         //     return res.status(404).json({ message: "User with that Username already exists" });
         // }
-
+        // console.log("Username not found");
         // const repeatedEmail = await User.findOne({where: {email: req.body.email}})
-        // if (!repeatedUsername) {
+        // if (!repeatedEmail) {
+        //     // No hacer nada
+        // } else if(repeatedEmail.dataValues.email == req.body.email) {
         //     return res.status(404).json({ message: "User with that Email already exists" });
         // }
 
+        // try {
+        //     const updatedUser = user.update(userInput)
+        //     return res.status(202).json({ message: updatedUser });
+        // } catch (error) {
+        //     return res.status(400).json({ message: error });
+        // }
+
         try {
-            const updatedUser = user.update(userInput)
-            return res.status(202).json({ message: updatedUser });
+            // Check if the user exists with the given username or email
+            console.log(req.body.userName);
+            console.log(req.body.email);
+            const existingUser = await User.findOne({
+                where: {
+                    // El Op.or es una funcion de Sequalize para hacer consultas complejas en este caso un or
+                    [Sequelize.or]: [
+                        { userName: req.body.userName },
+                        { email: req.body.email }
+                    ]
+                }
+            });
+        
+            if (existingUser) {
+                if (existingUser.userName === req.body.userName) {
+                    return res.status(400).json({ message: "User with that username already exists" });
+                }
+                if (existingUser.email === req.body.email) {
+                    return res.status(400).json({ message: "User with that email already exists" });
+                }
+            }
+        
+            // Si el usuario no existe hacemos el update
+            const updatedUser = await user.update(userInput);
+            return res.status(200).json({ message: "User updated successfully", user: updatedUser });
         } catch (error) {
-            return res.status(400).json({ message: error });
+            return res.status(500).json({ message: "Internal server error", error: error.message });
         }
         
     } catch (error) {

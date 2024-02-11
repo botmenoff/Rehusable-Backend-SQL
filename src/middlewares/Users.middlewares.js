@@ -113,7 +113,7 @@ const verifyToken = async (req, res, next) => {
                     const userId = decoded.id
                     // Buscar el usuario
                     const userFounded = await User.findByPk(userId);
-                    console.log(userFounded);
+                    // console.log(userFounded);
                     // Si es admin puede eliminar el usuario
                     if (userFounded.dataValues.admin) {
                         next()
