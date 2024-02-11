@@ -37,6 +37,27 @@ const registerUser = async (req, res) => {
             avatar: "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128"
         }
 
+        // Verificar que el usuario o el email no existan
+        const userNameFound = await User.findOne({
+            where: {
+                userName: userInput.userName,
+            }
+        });
+        if (userNameFound) {
+            res.status(400).json({ message: "This username has already been picked" });
+        }
+
+        const emailFound = await User.findOne({
+            where: {
+                email: userInput.email,
+            }
+        });
+        if (emailFound) {
+            res.status(400).json({ message: "This email has already been used" });
+        }
+
+
+        console.log("Username not Founded");
         const user = await User.create(userInput);
 
         res.status(201).json({
@@ -148,83 +169,49 @@ const deleteUsersById = async (req, res) => {
 }
 
 // UPDATE USER
-const updateUser = async (req,res) => {
+const updateUser = async (req, res) => {
     try {
         const userId = req.params.id;
-        console.log(userId);
+
         // Buscar el usuario
-        const user = await User.findByPk(userId)
+        const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
 
-        const userInput = {
-            userName: req.body.userName,
-            email: req.body.email,
-            avatar: "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128"
+        // Preparar el userInput
+        const userInput = {};
+
+        // Si el campo de userName está relleno, le añadimos el campo correspondiente y generamos el avatar
+        if (req.body.userName) {
+            userInput.userName = req.body.userName;
+            userInput.avatar = "https://ui-avatars.com/api/?name=" + req.body.userName + "&background=0D8ABC&color=fff&size=128";
         }
 
-        // // Verificar si el userName o el email existen
-        // const repeatedUsername = await User.findOne({where: {userName: req.body.userName}})
-        // console.log("USERNAME");
-        // console.log(req.body.userName);
-        // // console.log(repeatedUsername);
-        // if(!repeatedUsername){
-        //     // No hacer nada
-        // } else if (repeatedUsername.dataValues.userName == req.body.userName) {
-        //     return res.status(404).json({ message: "User with that Username already exists" });
-        // }
-        // console.log("Username not found");
-        // const repeatedEmail = await User.findOne({where: {email: req.body.email}})
-        // if (!repeatedEmail) {
-        //     // No hacer nada
-        // } else if(repeatedEmail.dataValues.email == req.body.email) {
-        //     return res.status(404).json({ message: "User with that Email already exists" });
-        // }
+        // Si el campo de email está relleno, le añadimos el campo correspondiente
+        if (req.body.email) {
+            userInput.email = req.body.email;
+        }
 
-        // try {
-        //     const updatedUser = user.update(userInput)
-        //     return res.status(202).json({ message: updatedUser });
-        // } catch (error) {
-        //     return res.status(400).json({ message: error });
-        // }
-
-        try {
-            // Check if the user exists with the given username or email
-            console.log(req.body.userName);
-            console.log(req.body.email);
-            const existingUser = await User.findOne({
-                where: {
-                    // El Op.or es una funcion de Sequalize para hacer consultas complejas en este caso un or
-                    [Sequelize.or]: [
-                        { userName: req.body.userName },
-                        { email: req.body.email }
-                    ]
-                }
-            });
-        
-            if (existingUser) {
-                if (existingUser.userName === req.body.userName) {
-                    return res.status(400).json({ message: "User with that username already exists" });
-                }
-                if (existingUser.email === req.body.email) {
-                    return res.status(400).json({ message: "User with that email already exists" });
-                }
+        // Comprobamos que haya campos para hacer el update
+        if (Object.keys(userInput).length > 0) {
+            let updatedUser;
+            try {
+                updatedUser = await user.update(userInput);
+                return res.status(200).json({ message: "User updated successfully", user: updatedUser }); 
+            } catch (error) {
+                return res.status(500).json({ message: "Error updating user", error: error.message });
             }
-        
-            // Si el usuario no existe hacemos el update
-            const updatedUser = await user.update(userInput);
-            return res.status(200).json({ message: "User updated successfully", user: updatedUser });
-        } catch (error) {
-            return res.status(500).json({ message: "Internal server error", error: error.message });
+        } else {
+            return res.status(400).json({ message: "No fields provided for update" });
         }
-        
     } catch (error) {
         if (!res.headersSent) {
             res.status(500).json({ message: error.message });
         }
     }
 }
+
 
 // Exportar los métodos del controlador
 module.exports = {
