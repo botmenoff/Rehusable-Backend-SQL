@@ -100,23 +100,22 @@ const verifyToken = async (req, res, next) => {
         // Obtener el token
         const authorizationHeader = req.headers['authorization'];
         const paramId = req.params.id;
-        console.log("JWT");
-        console.log(authorizationHeader);
         // Si no ha puesto el parametro
         if (authorizationHeader === undefined) {
-            res.status(400).json({ message: "Authorization header not recibed correctlly" });
+            res.status(400).json({ message: "Authorization header is required" });
         } else {
             // Verificar el token
             jwt.verify(authorizationHeader, process.env.SECRET_KEY, async (err, decoded) => {
                 if (err) {
-                    res.status(500).json({ message: "Error decodifying" })
+                    res.status(500).json({ message: "Error decodifying verify the token" })
                 } else {
                     // Hacer una query para obtener el usuario
                     const userId = decoded.id
                     // Buscar el usuario
                     const userFounded = await User.findByPk(userId);
-                    // Si es admin puede eliminar el usuario
-                    if (userFounded.dataValues.admin) {
+                    // console.log(userFounded);
+                    // Si es admin puede pasar
+                    if (userFounded.dataValues.isAdmin) {
                         next()
                     } else {
                         // Si el id es el mismo

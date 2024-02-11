@@ -49,19 +49,6 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'User',
-      // Verificar que ni el nombre ni el email sean el mismo
-      hooks: {
-        beforeValidate: async (user, options) => {
-          const existingUserWithEmail = await User.findOne({ where: { email: user.email } });
-          const existingUserWithUsername = await User.findOne({ where: { userName: user.userName } });
-          if (existingUserWithUsername) {
-            throw new Error('Username is already in use');
-          }
-          if (existingUserWithEmail) {
-            throw new Error('Email is already in use');
-          }
-        },
-      },
     }
   );
 
