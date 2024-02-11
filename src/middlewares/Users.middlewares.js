@@ -114,15 +114,16 @@ const verifyToken = async (req, res, next) => {
                     // Buscar el usuario
                     const userFounded = await User.findByPk(userId);
                     // console.log(userFounded);
-                    // Si es admin puede eliminar el usuario
-                    if (userFounded.dataValues.admin) {
-                        next()
-                    }
-                    // Si el id es el mismo
-                    if (userId == paramId) {
+                    // Si es admin puede pasar
+                    if (userFounded.dataValues.isAdmin) {
                         next()
                     } else {
-                        return res.status(401).json({ message: "You are not the owner of this user" });
+                        // Si el id es el mismo
+                        if (userId == paramId) {
+                            next()
+                        } else {
+                            return res.status(401).json({ message: "You are not the owner of this user" });
+                        }
                     }
                 }
             })
