@@ -8,6 +8,7 @@ const UsersMiddlewares = require('../middlewares/Users.middlewares.js');
 const Services = require('../services/Services.js')
 
 // USERS ROUTES
+router.get('/user/get/:id', UsersMiddlewares.isBanned, UserController.getUserById)
 router.get('/user/verify/:jwt', UserController.verifyEmail);
 router.get('/user/get', UserController.getAllUsers);
 router.post('/user/login', UserController.loginUser)

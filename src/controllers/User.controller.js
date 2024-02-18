@@ -212,6 +212,32 @@ const updateUser = async (req, res) => {
     }
 }
 
+// BAN USERS
+const banUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const userFounded = await User.findByPk(userId);
+        // Si el usuario se encuentra
+        if (userFounded) {
+            userFounded.isBanned = true;
+            // Actualizar el usuario
+            await userFounded.save();
+            res.status(200).json({ message: "User banned successfully" });
+        } else {
+            res.status(404).json({ message: "User not found" });
+        }
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        } else {
+            res.status(200).json({ user: user });
+        }
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+}
+
 
 // Exportar los métodos del controlador
 module.exports = {
@@ -220,5 +246,6 @@ module.exports = {
     loginUser,
     verifyEmail,
     deleteUsersById,
-    updateUser
+    updateUser,
+    banUser
 };

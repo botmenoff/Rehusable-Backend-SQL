@@ -32,6 +32,8 @@ const verifyUserData = async (req, res, next) => {
             password: Joi.string()
                 .pattern(/^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/)
                 .required(),
+
+            passwordConfirmation: Joi.ref('password')
         });
 
         // Definimos el usuario que nos pasan de la ruta
@@ -166,10 +168,35 @@ const verifyUserDataUpdate = async (req, res, next) => {
     }
 }
 
+// VERIFY IF IT'S BANNED
+const isBanned = async (req, res, next) => {
+    try {
+        const authorizationHeader = req.headers['authorization'];
+        jwt.verify(authorizationHeader, process.env.SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                res.status(500).json({ message: "Error decodifying verify the token" })
+            } else {
+                // Hacer una query para obtener el usuario
+                const userId = decoded.id
+                // Buscar el usuario
+                const userFounded = await User.findByPk(userId);
+                if (userFounded.dataValues.isBanned) {
+                    return res.status(401).json({ message: "You are banned =(" });
+                } else {
+                    next()
+                }
+            }
+        })
+    } catch (error) {
+
+    }
+}
+
 
 module.exports = {
     verifyUserData,
     verificationEmail,
     verifyToken,
-    verifyUserDataUpdate
+    verifyUserDataUpdate,
+    isBanned
 };
