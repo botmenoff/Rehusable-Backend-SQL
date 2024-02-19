@@ -235,6 +235,12 @@ const updateUser = async (req, res) => {
 const banUser = async (req, res) => {
     try {
         const userId = req.params.id;
+        if (req.adminId == userId) {
+            res.status(404).json({ 
+                message: "You can not ban yourself 👎👎"
+            });
+
+        }
         const userFounded = await User.findByPk(userId);
         // Si el usuario se encuentra
         if (userFounded) {

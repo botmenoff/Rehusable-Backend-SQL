@@ -206,6 +206,7 @@ const isAdmin = async (req, res, next) => {
                 // Buscar el usuario
                 const userFounded = await User.findByPk(userId);
                 if (userFounded.dataValues.isAdmin) {
+                    req.adminId = userFounded.dataValues.id
                     next()
                 } else {
                     return res.status(401).json({ message: "You are not admin =(" });
