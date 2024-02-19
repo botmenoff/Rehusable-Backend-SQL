@@ -222,5 +222,6 @@ module.exports = {
     verificationEmail,
     verifyToken,
     verifyUserDataUpdate,
-    isBanned
+    isBanned,
+    isAdmin
 };

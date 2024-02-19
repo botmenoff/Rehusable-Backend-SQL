@@ -11,10 +11,9 @@ const Services = require('../services/Services.js')
 router.get('/user/get/:id', UsersMiddlewares.isBanned, UserController.getUserById)
 router.get('/user/verify/:jwt', UserController.verifyEmail);
 router.get('/user/get', UserController.getAllUsers);
-router.get('user/banUser/:id')
 router.post('/user/login', UserController.loginUser)
 router.post('/user/register', UsersMiddlewares.verifyUserData, UsersMiddlewares.verificationEmail, UserController.registerUser);
 router.delete('/user/delete/:id', UsersMiddlewares.verifyToken, UserController.deleteUsersById);
 router.put('/user/update/:id', UsersMiddlewares.verifyToken, UserController.updateUser)
-
+router.put('/user/banUser/:id', UsersMiddlewares.isAdmin, UserController.banUser)
 module.exports = router;
