@@ -25,6 +25,25 @@ const getAllUsers = async (req, res) => {
     }
 };
 
+// GET USER BY ID
+const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findByPk(userId, {
+            attributes: ['userName', 'email', 'isAdmin', 'isBanned', 'avatar', 'createdAt', 'updatedAt'],
+        });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        } else {
+            res.status(200).json({ user: user });
+        }
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+}
+
 // REGISTER
 const registerUser = async (req, res) => {
     try {
@@ -247,5 +266,6 @@ module.exports = {
     verifyEmail,
     deleteUsersById,
     updateUser,
-    banUser
+    banUser,
+    getUserById
 };
