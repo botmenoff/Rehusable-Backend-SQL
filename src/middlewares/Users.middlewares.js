@@ -192,6 +192,30 @@ const isBanned = async (req, res, next) => {
     }
 }
 
+// CHECK IS ADMIN
+const isAdmin = async (req, res, next) => {
+    try {
+        const authorizationHeader = req.headers['authorization'];
+
+        jwt.verify(authorizationHeader, process.env.SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                res.status(500).json({ message: "Error decodifying verify the token" })
+            } else {
+                // Hacer una query para obtener el usuario
+                const userId = decoded.id
+                // Buscar el usuario
+                const userFounded = await User.findByPk(userId);
+                if (userFounded.dataValues.isAdmin) {
+                    next()
+                } else {
+                    return res.status(401).json({ message: "You are not admin =(" });
+                }
+            }
+        })
+    } catch (error) {
+        res.status(500).json({ 'Unexpected Error:': error });
+    }
+}
 
 module.exports = {
     verifyUserData,
